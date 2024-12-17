@@ -10,9 +10,7 @@ import (
 func InitRoutes() {
 	router := gin.Default()
 
-	router.GET("/", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{"test": "Hello!"})
-	})
+	router.POST("api/v1/wallet/create", handlers.WalletCreate)
 
 	router.POST("api/v1/wallet", handlers.WalletOperation)
 

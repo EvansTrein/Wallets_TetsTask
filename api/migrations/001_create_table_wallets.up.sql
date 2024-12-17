@@ -1,0 +1,5 @@
+CREATE TABLE wallets (
+    id SERIAL PRIMARY KEY,
+    walletID VARCHAR(255) UNIQUE NOT NULL,
+	total FLOAT
+);
