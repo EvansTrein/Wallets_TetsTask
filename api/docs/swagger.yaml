@@ -1,0 +1,156 @@
+definitions:
+  models.ActiveWallet:
+    properties:
+      total:
+        example: 1000
+        type: number
+      uuid:
+        example: 38c7e784-e963-4cc1-9124-de3e6c7e60e4
+        type: string
+    type: object
+  models.NewWallet:
+    properties:
+      walletId:
+        example: 38c7e784-e963-4cc1-9124-de3e6c7e60e4
+        type: string
+    required:
+    - walletId
+    type: object
+  models.RespError:
+    properties:
+      messageErr:
+        example: user error
+        type: string
+      textErr:
+        example: error text
+        type: string
+    type: object
+  models.RespMessage:
+    properties:
+      message:
+        example: message
+        type: string
+    type: object
+  models.WalletRequest:
+    properties:
+      amount:
+        example: 500
+        type: number
+      operationType:
+        example: DEPOSIT or WITHDRAW
+        type: string
+      walletId:
+        example: 38c7e784-e963-4cc1-9124-de3e6c7e60e4
+        type: string
+    required:
+    - amount
+    - operationType
+    - walletId
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8000
+info:
+  contact:
+    email: evanstrein@icloud.com
+    name: Evans Trein
+    url: https://github.com/EvansTrein
+  description: Тестовое задание
+  title: Test Task
+  version: "0.1"
+paths:
+  /api/v1/wallet:
+    post:
+      consumes:
+      - application/json
+      description: Perform a deposit or withdrawal operation on the wallet with the
+        given walletID
+      parameters:
+      - description: Wallet operation request
+        in: body
+        name: wallet
+        required: true
+        schema:
+          $ref: '#/definitions/models.WalletRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RespMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.RespError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.RespError'
+      summary: Perform a wallet operation
+      tags:
+      - Wallets
+  /api/v1/wallet/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new wallet with zero balance and specified UUID
+      parameters:
+      - description: Wallet object
+        in: body
+        name: wallet
+        required: true
+        schema:
+          $ref: '#/definitions/models.NewWallet'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.RespMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.RespError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.RespError'
+      summary: Create a new wallet
+      tags:
+      - Wallets
+  /api/v1/wallets/{WALLET_UUID}:
+    get:
+      consumes:
+      - application/json
+      description: Get the balance of the wallet with the given UUID
+      parameters:
+      - description: UUID of the wallet
+        example: 38c7e784-e963-4cc1-9124-de3e6c7e60e4
+        in: path
+        name: WALLET_UUID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ActiveWallet'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.RespError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.RespError'
+      summary: Get wallet balance
+      tags:
+      - Wallets
+schemes:
+- http
+swagger: "2.0"

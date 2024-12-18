@@ -19,36 +19,43 @@ func SqlCreateWallet(walletId string) error {
 }
 
 func SqlDeposit(walletId string, amount float64) error {
-	var exists bool
+	var exists bool // variable for checking the existence of a record in the database
 
+	// initiate a transaction
 	transaction, err := DB.Begin()
 	if err != nil {
-		log.Println("не удалось создать транзакцию")
+		log.Println("failed to create a transaction")
 		return err
 	}
 
-	err = transaction.QueryRow("SELECT EXISTS(SELECT 1 FROM wallets WHERE walletID = $1)", walletId).Scan(&exists)
+	// pass the SQL command and block the record until the transaction is committed or rolled back
+	err = transaction.QueryRow("SELECT EXISTS(SELECT 1 FROM wallets WHERE walletID = $1 FOR UPDATE)", walletId).Scan(&exists)
 	if err != nil {
-		log.Println("не удалось выполнить поиск в БД по walletID")
+		log.Println("failed to search the database by walletID")
 		transaction.Rollback()
 		return err
 	}
 
+	// check availability
 	if !exists {
 		transaction.Rollback()
 		return errors.New("there is no such wallet")
 	}
 
+	// pass the SQL command to update
 	_, err = transaction.Exec("UPDATE wallets SET total = total + $1 WHERE walletID = $2", amount, walletId)
 	if err != nil {
-		log.Println("не удалось обновить сумму")
+		log.Println("failed to update the amount")
 		transaction.Rollback()
 		return err
 	}
 
+	// time.Sleep(time.Second * 10)
+
+	// finalize the transaction, saving the changes
 	err = transaction.Commit()
 	if err != nil {
-		log.Println("не удалось сохранить изменения транзакции")
+		log.Println("failed to save transaction changes")
 		transaction.Rollback()
 		return err
 	}
@@ -57,42 +64,48 @@ func SqlDeposit(walletId string, amount float64) error {
 }
 
 func SqlWithdraw(walletId string, amount float64) error {
-	var activeWallet models.ActiveWallet
+	var activeWallet models.ActiveWallet // variable for the wallet we are working with
 
+	// initiate a transaction
 	transaction, err := DB.Begin()
 	if err != nil {
-		log.Println("Не удалось создать транзацию")
+		log.Println("failed to create a tranzation")
 		return err
 	}
 
-	err = transaction.QueryRow("SELECT walletid, total FROM wallets WHERE walletID = $1 FOR UPDATE", walletId).Scan(&activeWallet.Uuid, &activeWallet.Total)
+	// pass the SQL command and block the record until the transaction is committed or rolled back
+	err = transaction.QueryRow("SELECT walletid, total FROM wallets WHERE walletID = $1 FOR UPDATE",
+		walletId).Scan(&activeWallet.Uuid, &activeWallet.Total)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			transaction.Rollback()
 			return errors.New("there is no such wallet")
 		}
-		log.Println("не удалось выполнить поиск в БД по walletID")
-		transaction.Rollback()
-		return err
-	}
-
-	if amount > activeWallet.Total {
-		transaction.Rollback()
-		return errors.New("insufficient funds in the wallet")
-	}
-
-	_, err = transaction.Exec("UPDATE wallets SET total = total - $1 WHERE walletID = $2 AND total >= $1", amount, walletId)
-	if err != nil {
-		log.Println("не удалось обновить сумму")
+		log.Println("failed to search the database by walletID")
 		transaction.Rollback()
 		return err
 	}
 
 	// time.Sleep(time.Second * 10)
 
+	// verification that there are sufficient funds for the operation
+	if amount > activeWallet.Total {
+		transaction.Rollback()
+		return errors.New("insufficient funds in the wallet")
+	}
+
+	// pass the SQL command to update
+	_, err = transaction.Exec("UPDATE wallets SET total = total - $1 WHERE walletID = $2 AND total >= $1", amount, walletId)
+	if err != nil {
+		log.Println("failed to update the amount")
+		transaction.Rollback()
+		return err
+	}
+
+	// finalize the transaction, saving the changes
 	err = transaction.Commit()
 	if err != nil {
-		log.Println("не удалось сохранить изменения транзакции")
+		log.Println("failed to save transaction changes")
 		transaction.Rollback()
 		return err
 	}
