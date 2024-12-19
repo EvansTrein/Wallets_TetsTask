@@ -67,6 +67,9 @@ From myself, I added a swagger and a query to create a wallet.
 - The whole difficulty for me was in the interaction with the database. I solved it through `FOR UPDATE` + transaction with Read Committed isolation level (default for Postgres). I thought about Serializable isolation, but I didn't, the task doesn't say that it's necessary to be so strict. **Summary** - a transaction is in progress and if a GET request arrives at that moment, it will return the balance that was BEFORE the transaction started. If another transaction request comes, it will queue up and wait until the transaction before it is completed. 
 - How did I test it? I added `time.Sleep(time.Second * 10)` to the transaction and via Postman I ran 5 requests for the transaction and 2 more to get the balance. POST requests worked one by one, and GET requests showed the last known balance (no transactions were used in GET request).
 
+**GET api/v1/wallets/{WALLET_UUID}**
+- Here the necessary data is passed in the query itself, we extract and search in the database. Transactions are not used here.  
+
 **No request should be unprocessed (50X error)** - I understood it this way: the server should not return 500 codes, i.e. each SQL query should work, following the logic - the balance allows, debit; the balance does not have the required amount for the operation, return 400 server response.. 
 
 **The application must run in a docker container** - there is a package in Docker. Two containers, a database and a server. The server has a multi-stage build (to reduce the image size).
