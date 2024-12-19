@@ -2,8 +2,6 @@ package envs
 
 import (
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 type Envs struct {
@@ -21,9 +19,9 @@ var ServerEnvs Envs
 
 func LoadEnvs() error {
 
-	if err := godotenv.Load("../config.env"); err != nil {
-		return err
-	}
+	// if err := godotenv.Load("../config.env"); err != nil {
+	// 	return err
+	// }
 
 	ServerEnvs.API_PORT = os.Getenv("API_PORT")
 

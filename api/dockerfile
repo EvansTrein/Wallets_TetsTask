@@ -1,0 +1,19 @@
+# Step 1: Build dependencies
+FROM golang:1.23.3-alpine AS build-env
+WORKDIR /app
+COPY go.mod ./
+COPY go.sum ./
+COPY migrations ./
+RUN go mod download
+
+# Step 2: Build the application
+COPY . .
+RUN go build -o main .
+
+# Step 3: Creating an image with the binary
+FROM alpine:latest
+WORKDIR /app
+# Save the file with external variables 
+COPY --from=build-env /app/ .
+EXPOSE ${API_PORT}
+CMD ["./main"]
