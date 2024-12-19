@@ -19,6 +19,7 @@ var ServerEnvs Envs
 
 func LoadEnvs() error {
 
+	// this is needed to run it without Docker
 	// if err := godotenv.Load("../config.env"); err != nil {
 	// 	return err
 	// }
