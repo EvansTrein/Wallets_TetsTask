@@ -1,3 +1,5 @@
+Language: [EN](https://github.com/EvansTrein/Wallets_TetsTask/edit/main/Readme.md), [RU](https://github.com/EvansTrein/Wallets_TetsTask/blob/main/RU.md)
+
 # Тестовое задание от одной из компаний
 Задание выглядит так:
 
